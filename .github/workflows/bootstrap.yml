@@ -1,0 +1,23 @@
+name: Bootstrap verification
+on:
+  push:
+    branches: [feat/verifier-foundation]
+permissions:
+  contents: read
+jobs:
+  contracts:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - name: Resolve candidate dependency lock
+        run: cargo generate-lockfile
+      - name: Test contracts
+        run: cargo test --workspace --locked
+      - name: Preserve dependency lock
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: candidate-cargo-lock
+          path: Cargo.lock
+          if-no-files-found: error

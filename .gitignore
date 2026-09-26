@@ -1,0 +1,14 @@
+/target/
+/.superpowers/
+/.vercel/
+**/node_modules/
+**/dist/
+.env
+.env.*
+*.key
+*.pem
+*.p12
+*.sec
+result
+result-*
+/.local/
