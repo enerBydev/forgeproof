@@ -1,0 +1,14 @@
+[package]
+name = "engctl"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+
+[dependencies]
+eng-catalog = { path = "../../crates/catalog" }
+eng-contracts = { path = "../../crates/contracts" }
+serde_json.workspace = true
+
+[lints]
+workspace = true
