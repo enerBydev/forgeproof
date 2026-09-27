@@ -23,6 +23,10 @@ Local host: Ubuntu; Git, Node.js and Python available. Rust, Cargo, Nix and Mini
 - Local web receipt tests RED, 4 passed / 4 failed against a reject-all stub.
 - Resumed 2026-09-27 after account-limit interruption. Remote branch remained at a39755758f163e223a2d4613e3a6c99c94b54401. Vercel project did not yet exist.
 - Ruling: reject parent-directory components in the trusted staging path. Tests resolve their fixture paths before invoking verification. Staging remains the caller's responsibility; concurrent hostile writers are outside the v1 guarantee.
+- CI run 36338804247 caught a compile-time sha2 0.11 API difference: digest arrays do not implement LowerHex. Format digest bytes explicitly; do not downgrade or float the dependency.
+- CI run 36339230526: 7 manifest + 12 integrity tests GREEN. Authorization (6) and CLI (6) tests RED against their explicit stubs; these failures were observed before implementing their behavior.
+- Local receipt inspector: 8 tests GREEN, static build passed on Node 24.19.0. Imported receipts are explicitly unauthenticated claims; no file is uploaded to a backend.
+- Ruling: this milestone's Vercel UI is a dependency-free static inspector. A framework and server API are deferred until the shared catalog requires them; Rust remains the verification authority. This reduces initial surface area without claiming MCP or agent installation is implemented.
 
 ## Official sources consulted
 
