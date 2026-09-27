@@ -12,3 +12,5 @@
 result
 result-*
 /.local/
+__pycache__/
+*.pyc

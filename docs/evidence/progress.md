@@ -17,7 +17,12 @@ Local host: Ubuntu; Git, Node.js and Python available. Rust, Cargo, Nix and Mini
 
 ## Test ledger
 
-- Manifest rejection tests written before validation implementation. First source revision deliberately only deserializes; pending CI execution to establish RED.
+- CI run 36260561745: manifest suite RED, 1 passed / 6 failed, due to accepting invalid inputs in the initial deserialization-only implementation.
+- CI run 36260835816: manifest suite GREEN, 7 passed. Rust 1.98.0 and candidate crate versions compiled on Ubuntu 24.04.
+- Same run: independently generated Minisign fixtures validated. Catalog suite RED, 12 failed against the explicit not_implemented stub. No package-verification success claimed from this run.
+- Local web receipt tests RED, 4 passed / 4 failed against a reject-all stub.
+- Resumed 2026-09-27 after account-limit interruption. Remote branch remained at a39755758f163e223a2d4613e3a6c99c94b54401. Vercel project did not yet exist.
+- Ruling: reject parent-directory components in the trusted staging path. Tests resolve their fixture paths before invoking verification. Staging remains the caller's responsibility; concurrent hostile writers are outside the v1 guarantee.
 
 ## Official sources consulted
 

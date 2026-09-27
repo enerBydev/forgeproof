@@ -1,7 +1,7 @@
 use eng_catalog::{TrustStore, verify_integrity};
 use std::{fs, path::PathBuf};
 
-fn fixtures() -> PathBuf { PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../.local/fixtures") }
+fn fixtures() -> PathBuf { PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../.local/fixtures").canonicalize().unwrap() }
 fn trust() -> TrustStore { TrustStore::parse(&fs::read(fixtures().join("trust.json")).unwrap()).unwrap() }
 
 #[test]
