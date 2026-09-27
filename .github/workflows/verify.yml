@@ -1,0 +1,69 @@
+name: Verify
+on:
+  push:
+    branches: [main, feat/verifier-foundation]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  contracts:
+    name: Rust and web
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
+        with:
+          node-version: 24.19.0
+      - name: Prepare independent signature fixtures
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y minisign
+          python3 scripts/generate-fixtures.py
+      - name: Check formatting
+        run: cargo fmt --all -- --check
+      - name: Test Rust workspace
+        shell: bash
+        run: cargo test --workspace --locked 2>&1 | tee rust-tests.log
+      - name: Lint Rust
+        run: cargo clippy --workspace --all-targets --locked -- -D warnings
+      - name: Test and build web interface
+        shell: bash
+        run: |
+          npm ci --ignore-scripts
+          npm test 2>&1 | tee web-tests.log
+          npm run build
+      - name: Check dependency locks stayed frozen
+        run: git diff --exit-code -- Cargo.lock flake.lock package-lock.json
+      - name: Preserve test evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: rust-web-evidence
+          retention-days: 14
+          path: |
+            rust-tests.log
+            web-tests.log
+            dist/status.json
+          if-no-files-found: warn
+  nix:
+    name: NixOS VM
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: cachix/install-nix-action@13d8dd58da0234aa297dedd986986ccb8e7f3e24 # v31.11.1
+      - name: Test frozen NixOS build
+        shell: bash
+        run: nix flake check --no-update-lock-file --print-build-logs 2>&1 | tee nix-verification.log
+      - name: Check dependency locks stayed frozen
+        run: git diff --exit-code -- Cargo.lock flake.lock
+      - name: Preserve VM evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: nixos-evidence
+          retention-days: 14
+          path: nix-verification.log
+          if-no-files-found: error
