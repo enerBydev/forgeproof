@@ -23,6 +23,9 @@ jobs:
         run: cargo test -p eng-catalog --test integrity --locked
       - name: Test authorization
         run: cargo test -p eng-catalog --test authorization --locked
+      - name: Test CLI
+        if: always()
+        run: cargo test -p engctl --locked
       - name: Format candidate
         if: always()
         run: cargo fmt --all
@@ -34,4 +37,5 @@ jobs:
           path: |
             Cargo.lock
             crates
+            apps/engctl
           if-no-files-found: error

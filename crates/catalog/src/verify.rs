@@ -74,9 +74,13 @@ pub fn verify_integrity(root: &Path, trust: &TrustStore) -> Result<VerifiedBundl
         if !seen.contains(item.path.as_str()) { return Err(VerificationError::new("missing_file",Some(&item.path))); }
         let payload = read_bounded(&root.join(&item.path),item.size_bytes)?;
         if payload.len() as u64 != item.size_bytes { return Err(VerificationError::new("size_mismatch",Some(&item.path))); }
-        if format!("{:x}",Sha256::digest(&payload)) != item.sha256 { return Err(VerificationError::new("hash_mismatch",Some(&item.path))); }
+        if sha256(&payload) != item.sha256 { return Err(VerificationError::new("hash_mismatch",Some(&item.path))); }
     }
-    Ok(VerifiedBundle { manifest, manifest_sha256: format!("{:x}",Sha256::digest(&bytes)), signer_id })
+    Ok(VerifiedBundle { manifest, manifest_sha256: sha256(&bytes), signer_id })
+}
+
+fn sha256(bytes: &[u8]) -> String {
+    Sha256::digest(bytes).iter().map(|byte| format!("{byte:02x}")).collect()
 }
 
 fn enumerate(root: &Path, dir: &Path, expected: &BTreeSet<&str>, directories: &BTreeSet<&str>, seen: &mut BTreeSet<String>) -> Result<(),VerificationError> {

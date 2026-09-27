@@ -11,6 +11,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import time
 
 
 def run(*args):
@@ -19,6 +20,11 @@ def run(*args):
 
 def generate(output):
     output.mkdir(parents=True, exist_ok=False)
+    now = int(time.time())
+    snapshot = {"schema_version": 1, "generated_at": now - 60, "expires_at": now + 3600, "revoked_release_ids": [], "revoked_manifest_sha256": [], "revoked_signer_ids": []}
+    (output / "current.json").write_text(json.dumps(snapshot))
+    (output / "revoked.json").write_text(json.dumps(dict(snapshot, revoked_release_ids=["rust-nix@0.1.0"])))
+    (output / "expired.json").write_text(json.dumps(dict(snapshot, generated_at=now - 120, expires_at=now - 1)))
     with tempfile.TemporaryDirectory(prefix="forgeproof-test-keys-") as temp:
         keys = pathlib.Path(temp)
         for signer in ("trusted", "other"):
