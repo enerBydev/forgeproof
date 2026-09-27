@@ -15,8 +15,6 @@ jobs:
           sudo apt-get update -qq
           sudo apt-get install -y minisign
           python3 scripts/generate-fixtures.py
-      - name: Resolve candidate dependency lock
-        run: cargo generate-lockfile
       - name: Test contracts
         run: cargo test -p eng-contracts --locked
       - name: Test bundle integrity
@@ -30,9 +28,8 @@ jobs:
         run: cargo clippy --workspace --all-targets --locked -- -D warnings
       - name: Test and build web interface
         run: npm ci --ignore-scripts && npm test && npm run build
-      - name: Format candidate
-        if: always()
-        run: cargo fmt --all
+      - name: Check formatting
+        run: cargo fmt --all -- --check
       - name: Preserve dependency lock
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -49,11 +46,8 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: cachix/install-nix-action@13d8dd58da0234aa297dedd986986ccb8e7f3e24 # v31.11.1
-      - name: Resolve Nix lock and test build
-        run: |
-          nix flake lock
-          nix develop --command cargo generate-lockfile
-          nix flake check --print-build-logs
+      - name: Test frozen NixOS build
+        run: nix flake check --no-update-lock-file --print-build-logs
       - name: Preserve Nix lock
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

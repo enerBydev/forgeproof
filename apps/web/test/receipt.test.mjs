@@ -37,3 +37,8 @@ test('revocation is not displayed as approval', () => {
   const result=inspectReceipt(JSON.stringify({...valid(),authorization:'revoked',errors:[{code:'release_revoked'}]}));
   assert.equal(result.ok,true); assert.equal(result.label,'Publicación revocada');
 });
+test('rejects authorization values that coerce to an allowed state', () => {
+  for (const authorization of [['approved'], ['unknown'], {toString:'approved'}, null, 0]) {
+    assert.equal(inspectReceipt(JSON.stringify({...valid(),authorization,errors:[{code:'revocations_expired'}]})).ok,false);
+  }
+});

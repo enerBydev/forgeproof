@@ -11,7 +11,7 @@ export function inspectReceipt(text) {
   try { receipt=JSON.parse(text); } catch { return invalid; }
   if(!record(receipt) || Object.keys(receipt).length !== fields.length || !fields.every(key=>Object.hasOwn(receipt,key))) return invalid;
   const r=receipt;
-  if(r.schema_version!==1 || !id(r.target) || !['verified','failed'].includes(r.integrity) || !Object.hasOwn(labels,r.authorization)) return invalid;
+  if(r.schema_version!==1 || !id(r.target) || !['verified','failed'].includes(r.integrity) || typeof r.authorization!=='string' || !Object.hasOwn(labels,r.authorization)) return invalid;
   if(!(r.release_id===null || id(r.release_id)) || !(r.signer_id===null || id(r.signer_id)) || !(r.manifest_sha256===null || hash(r.manifest_sha256))) return invalid;
   if(!Array.isArray(r.errors) || r.errors.length>128 || !r.errors.every(error=>record(error) && id(error.code) && Object.keys(error).every(k=>['code','path'].includes(k)) && (!Object.hasOwn(error,'path') || (typeof error.path==='string' && error.path.length<=4096)))) return invalid;
   if(r.integrity==='verified' && (!id(r.release_id) || !id(r.signer_id) || !hash(r.manifest_sha256))) return invalid;

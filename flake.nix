@@ -20,8 +20,7 @@
       doCheck = true;
     };
   in {
-    packages.${system}.default = engctl;
-    packages.${system}.engctl = engctl;
+    packages.${system} = { default = engctl; inherit engctl; };
     devShells.${system}.default = pkgs.mkShell {
       packages = [ toolchain pkgs.minisign pkgs.python3 pkgs.nodejs_24 pkgs.git ];
     };
