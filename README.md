@@ -4,9 +4,9 @@ Especialistas de ingeniería versionados, paquetes firmados y evidencia comproba
 
 [Abrir el inspector en Vercel](https://forgeproof-two.vercel.app/) · [Evidencia de CI](https://github.com/enerBydev/forgeproof/actions)
 
-La primera entrega implementa **`engctl verify`**, un verificador local en Rust, y un **inspector de recibos para Vercel**. Comprueba firma Minisign, contenido exacto, cliente declarado y vigencia de revocaciones. La incertidumbre no permite aprobar un paquete.
+Forgeproof implementa **`engctl verify`**, distribución local con **`engctl install`** y recuperación, y un **inspector de recibos para Vercel**. Comprueba firma Minisign, contenido exacto, cliente declarado y vigencia de revocaciones. La incertidumbre no permite aprobar un paquete.
 
-Esta entrega todavía no instala agentes ni ofrece un servidor MCP. La compatibilidad con Codex, Claude Code, ChatGPT y Claude requiere adaptadores y pruebas reales en entregas posteriores; un nombre de cliente en el manifiesto no la certifica.
+La distribución local genera `AGENTS.md` para `codex@0.158.0` y `CLAUDE.md` para `claude-code@2.1.283`, a partir de instrucciones y políticas verificadas. Detecta cambios locales y revierte instalaciones interrumpidas. Los perfiles son adaptadores de formato: todavía no certifican consumo efectivo en clientes autenticados. MCP y los clientes remotos permanecen pendientes. [Uso del instalador](docs/usage/install.md).
 
 ## Empezar
 
@@ -47,6 +47,8 @@ npm run build
 
 ## Código y decisiones
 
+- [`docs/usage/install.md`](docs/usage/install.md): instalación, perfiles y recuperación.
+- [`docs/evidence/traceability.md`](docs/evidence/traceability.md): estado de cada entrega y sus pruebas.
 - [`docs/usage/verify.md`](docs/usage/verify.md): contratos, uso y límites de confianza.
 - [`docs/acceptance/verifier.md`](docs/acceptance/verifier.md): matriz de aceptación y alcance.
 - [`docs/evidence/progress.md`](docs/evidence/progress.md): evidencia del desarrollo y revisión.

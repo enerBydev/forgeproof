@@ -7,7 +7,7 @@ Referencia: `docs/design/architecture.md`, propuesta original de 2026-09-26. Act
 | Entrega | Estado | Alcance demostrado |
 | --- | --- | --- |
 | 1. Publicaciones verificables | Implementada y verificada | Contratos, integridad, firma, revocación, CLI y VM NixOS |
-| 2. Distribución local | Siguiente entrega | Instalador y adaptadores con idempotencia, conflictos y recuperación |
+| 2. Distribución local | Implementada; cierre de revisión/CI en curso | Perfiles exactos, idempotencia, conflictos y recuperación; no certificación de clientes |
 | 3. Contrato y entorno de proyectos | Pendiente | El flake del propio verificador no valida todavía proyectos consumidores |
 | 4. Servicio y documentación | Pendiente | PostgreSQL, MCP, snapshots y recuperación textual |
 | 5. Ejecución y clientes remotos | Pendiente | Trabajos, OAuth y pruebas reales en Claude/ChatGPT |
@@ -41,3 +41,19 @@ Evidencia de cierre de brechas: [CI 36374905582](https://github.com/enerBydev/fo
 ## Límites que permanecen explícitos
 
 El primer hito supone staging inmutable y confianza, revocaciones y reloj controlados por el operador. La declaración de un cliente en el manifiesto no certifica sus capacidades nativas. La batería actual no incluye todavía fuzzing ni pruebas por propiedades de toda la plataforma, snapshots documentales completos ni evaluación de especialistas; esas actividades siguen pendientes dentro del programa de verificación global.
+
+## Segunda entrega: distribución local
+
+| Requisito | Código y prueba | Evidencia |
+| --- | --- | --- |
+| Volver a autorizar antes de instalar | `distribution/mod.rs`; rechazos CLI de paquetes alterados, revocados, vencidos y no confiables | Pruebas con procesos reales y entradas Minisign |
+| Adaptadores deterministas y limitados | `render.rs`; límites exactos, UTF-8/NUL, roles/perfiles incompatibles y orden de múltiples archivos | Diez pruebas de integración del instalador en total |
+| Idempotencia y actualización por cliente | `transaction.rs`; bytes/inodo estables al repetir y segundo cliente conservado al actualizar | Suite CLI y VM |
+| Conservar trabajo local y restringir rutas | `filesystem.rs`; conflicto inicial, cambios posteriores, enlaces simbólicos/duros y control desconocido | Suite CLI; ediciones durante journal en arnés |
+| Exclusión mutua y disponibilidad | Bloqueo OS; `installation-status` rechaza contención y journal pendiente | Proceso competidor real, sin simular el bloqueo |
+| Recuperación repetible | Journal acotado, relación entre imágenes y hashes validada; reversión | Diez interrupciones de instalación/reversión y dos conflictos preservados |
+| Entorno limpio | `nix/tests/verifier.nix` | Siete escenarios originales más nueve comandos de distribución |
+
+Primera evidencia funcional: [CI 36414818169](https://github.com/enerBydev/forgeproof/actions/runs/36414818169), revisión `536005729d6235d00bc2b6bdf784ca98c3a4425f`. Pasaron 42 pruebas Rust y la recuperación/VM; formato requirió corrección y el cierre completo está pendiente de su siguiente ejecución.
+
+Los perfiles `codex@0.158.0` y `claude-code@2.1.283` fijan versiones declaradas y formatos. No se ejecutaron sesiones autenticadas de esos clientes. La comprobación local de estado no verifica revocación ni evita que alguien inicie manualmente un cliente externo. La entrega 3/5 deberá consumirla al administrar trabajos y reautorizar el paquete.

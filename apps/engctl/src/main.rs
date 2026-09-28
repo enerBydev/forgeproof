@@ -1,3 +1,5 @@
+mod distribution;
+mod distribution_cli;
 use eng_catalog::{
     RevocationSnapshot, TrustStore, VerifiedBundle, authorize, read_bounded, verify_integrity,
 };
@@ -100,9 +102,17 @@ fn main() -> ExitCode {
         .skip(1)
         .map(|s| s.into_string())
         .collect();
+    if let Ok(values) = &args {
+        if values
+            .first()
+            .is_some_and(|v| ["install", "installation-status", "recover"].contains(&v.as_str()))
+        {
+            return distribution_cli::run(values);
+        }
+    }
     if matches!(&args,Ok(v) if v==&["--help"]) {
         println!(
-            "engctl verify --bundle DIR --trust FILE [--revocations FILE] --target ID [--json]\nAlways emits a JSON receipt. Exit: 0 approved; 1 denied/invalid; 2 unknown validity."
+            "engctl verify --bundle DIR --trust FILE [--revocations FILE] --target ID [--json]\nengctl install --project DIR --bundle DIR --trust FILE --revocations FILE --target ID [--json]\nengctl installation-status --project DIR [--json]\nengctl recover --project DIR [--json]\nVerify always emits a JSON receipt. Exit: 0 approved; 1 denied/invalid; 2 unknown validity."
         );
         return ExitCode::SUCCESS;
     }

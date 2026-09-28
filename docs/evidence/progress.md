@@ -1,6 +1,6 @@
 # Development evidence
 
-Plan: docs/design/architecture.md. First milestone only; no certification claim.
+Plan: docs/design/architecture.md. Evidence is scoped per milestone; no whole-platform certification claim.
 
 ## Decisions
 
@@ -64,3 +64,18 @@ Local host: Ubuntu; Git, Node.js and Python available. Rust, Cargo, Nix and Mini
 - https://jedisct1.github.io/minisign/
 
 Sources inform specific APIs; this is not a claim to have read all ecosystem documentation.
+
+## Local distribution execution — 2026-09-28 UTC
+
+- Gap closure final CI 36412648667 passed at `1a7e03e428cfafad5a64ec3bb07ff7250aeedf7d`. Fresh independent review through local `5e78cd0` found no actionable findings. Review does not substitute for runtime CI; snapshots cover names/types/bytes/link targets, not transient writes or all filesystem metadata.
+- PR #2 integrated as `95666577b3e22c89d715819e392e61379ac4ea43`. Both `feat/verifier-foundation` and `fix/verifier-evidence` were deleted remotely and locally after content checks. Local main uses the exact remote commit and tree.
+- Ruling: refine and execute delivery 2 inline under the user's explicit continuation/integration authorization; no additional approval gate is needed for routine implementation decisions.
+- Ruling: start with exact native instruction profiles, explicitly rejecting unsupported roles instead of silently dropping content. Cost: executable skills and other role adapters remain unavailable until implemented and tested.
+- Ruling: recovery rolls back rather than auto-promoting an interrupted candidate. Cost: retry installation after recovery; benefit: recovery does not authorize stale candidate instructions.
+- Pre-flight: verifier output feeds render only after current authorization; rendered outputs feed fixed-path journal; state hashes feed readiness. No shared-interface conflicts. The original plan does not define a job runner in this delivery: readiness is a prerequisite API, not a claim that external clients can be forcibly blocked.
+
+- Distribution RED: CI 36413663823 at `e01e1748556e8b26e4f4636279bddcee09baa519` compiled and failed all six initial installer tests because the command was absent. The preceding draft publication omitted files after a truncated tool response; the full tree was restored and matched locally before this run. Main was unaffected. Subsequent publications compare tree hashes before updating refs.
+- Distribution implementation: CI 36414171750 at `9195757ae0a3ce154ec9a42def9b5b1576086cf3` passed eight installation/control tests and failed the pending-journal test against the explicit recovery stub. Frozen Cargo accepted the new direct dependency edges to already locked serde/sha2 packages; no registry versions or checksums changed.
+- Recovery RED: CI 36414429205 at `2cff3b42ccad7525247cce39b6fd8ba4af909416` ran the disposable interruption harness. The first interrupted install retained a journal but recovery returned `recovery_not_implemented` before rollback was implemented.
+- Recovery GREEN: CI 36414818169 at `536005729d6235d00bc2b6bdf784ca98c3a4425f` passed all 42 Rust tests, ten interrupted install/rollback scenarios, both local-edit conflicts and the NixOS VM (seven verifier plus nine distribution command scenarios). The formatting gate failed; its diff was applied. This run is not recorded as an entirely green workflow; Clippy and the ordinary later steps still require the final run.
+- Multi-file ordering/policy rendering, rollback interruption and the extra local-state edit scenario characterize the implemented boundary; they are not falsely reported as individually observed RED→GREEN cycles.
