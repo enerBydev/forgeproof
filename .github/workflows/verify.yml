@@ -28,6 +28,9 @@ jobs:
         run: cargo test --workspace --locked 2>&1 | tee rust-tests.log
       - name: Lint Rust
         run: cargo clippy --workspace --all-targets --locked -- -D warnings
+      - name: Prove verifier regression sensitivity
+        shell: bash
+        run: python3 scripts/check-verifier-mutations.py 2>&1 | tee mutation-tests.log
       - name: Test and build web interface
         shell: bash
         run: |
@@ -45,6 +48,7 @@ jobs:
           path: |
             rust-tests.log
             web-tests.log
+            mutation-tests.log
             dist/status.json
           if-no-files-found: warn
   nix:

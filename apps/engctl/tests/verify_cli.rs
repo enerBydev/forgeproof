@@ -1,5 +1,40 @@
 use serde_json::{Value, json};
-use std::{fs, path::PathBuf, process::Command};
+use std::{
+    collections::BTreeMap,
+    fs,
+    path::{Path, PathBuf},
+    process::Command,
+};
+
+#[derive(Debug, PartialEq, Eq)]
+enum InputEntry {
+    Directory,
+    File(Vec<u8>),
+    Symlink(PathBuf),
+}
+
+fn input_tree(root: &Path) -> BTreeMap<PathBuf, InputEntry> {
+    fn visit(root: &Path, dir: &Path, result: &mut BTreeMap<PathBuf, InputEntry>) {
+        for entry in fs::read_dir(dir).unwrap() {
+            let entry = entry.unwrap();
+            let path = entry.path();
+            let kind = entry.file_type().unwrap();
+            let value = if kind.is_symlink() {
+                InputEntry::Symlink(fs::read_link(&path).unwrap())
+            } else if kind.is_dir() {
+                visit(root, &path, result);
+                InputEntry::Directory
+            } else {
+                assert!(kind.is_file());
+                InputEntry::File(fs::read(&path).unwrap())
+            };
+            result.insert(path.strip_prefix(root).unwrap().to_owned(), value);
+        }
+    }
+    let mut result = BTreeMap::new();
+    visit(root, root, &mut result);
+    result
+}
 fn fixtures() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR"))
         .join("../../.local/fixtures")
@@ -8,7 +43,7 @@ fn fixtures() -> PathBuf {
 }
 fn run(bundle: &str, target: &str, revocations: Option<&str>) -> (i32, Value) {
     let root = fixtures();
-    let before = fs::read(root.join(bundle).join("manifest.json")).unwrap();
+    let before = input_tree(&root);
     let mut cmd = Command::new(env!("CARGO_BIN_EXE_engctl"));
     cmd.args(["verify", "--bundle"])
         .arg(root.join(bundle))
@@ -26,7 +61,8 @@ fn run(bundle: &str, target: &str, revocations: Option<&str>) -> (i32, Value) {
     );
     assert_eq!(
         before,
-        fs::read(root.join(bundle).join("manifest.json")).unwrap()
+        input_tree(&root),
+        "verification modified its input tree"
     );
     (
         output.status.code().unwrap(),
