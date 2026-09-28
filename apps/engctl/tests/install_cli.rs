@@ -351,10 +351,22 @@ fn rejects_links_in_control_surfaces_and_unrecognized_control_files() {
 fn renders_instruction_and_policy_files_in_path_order() {
     let first = Project::new();
     let second = Project::new();
-    success(install(&first.0, "combined", "current.json", CODEX), "installed");
-    success(install(&second.0, "combined", "current.json", CODEX), "installed");
+    success(
+        install(&first.0, "combined", "current.json", CODEX),
+        "installed",
+    );
+    success(
+        install(&second.0, "combined", "current.json", CODEX),
+        "installed",
+    );
     let text = fs::read_to_string(first.0.join("AGENTS.md")).unwrap();
-    assert_eq!(text, fs::read_to_string(second.0.join("AGENTS.md")).unwrap());
-    assert!(text.find("## Source: instructions/rust.md").unwrap() < text.find("## Source: policy.md").unwrap());
+    assert_eq!(
+        text,
+        fs::read_to_string(second.0.join("AGENTS.md")).unwrap()
+    );
+    assert!(
+        text.find("## Source: instructions/rust.md").unwrap()
+            < text.find("## Source: policy.md").unwrap()
+    );
     assert!(text.contains("# Test policy\nReview changes before publishing.\n"));
 }

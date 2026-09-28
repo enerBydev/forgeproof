@@ -111,7 +111,8 @@ pub fn rollback(project: &LockedProject) -> Result<&'static str, Error> {
         &project.control.join("pending.json"),
         JOURNAL_LIMIT,
         "invalid_installation_journal",
-    )? else {
+    )?
+    else {
         return Ok("unchanged");
     };
     let journal: Journal = serde_json::from_str(&text).map_err(|_| invalid())?;
@@ -145,7 +146,10 @@ fn validate_journal(journal: &Journal) -> Result<(), Error> {
     if journal.schema_version != 1
         || journal.after.len() > OUTPUT_LIMIT
         || journal.after.contains('\0')
-        || journal.before.as_ref().is_some_and(|t| t.len() > OUTPUT_LIMIT || t.contains('\0'))
+        || journal
+            .before
+            .as_ref()
+            .is_some_and(|t| t.len() > OUTPUT_LIMIT || t.contains('\0'))
     {
         return Err(invalid());
     }
