@@ -82,6 +82,11 @@ def generate(output):
         limit_payload = b"A" * (32768 - len(envelope.encode()) - 1)
         native_variant("at-output-limit", limit_payload)
         native_variant("over-output-limit", limit_payload + b"A")
+        policy = b"# Test policy\nReview changes before publishing.\n"
+        combined_doc = json.loads(json.dumps(manifest))
+        combined_doc["files"].insert(0, {"path": "policy.md", "sha256": hashlib.sha256(policy).hexdigest(), "size_bytes": len(policy), "role": "policy"})
+        combined = bundle("combined", document=combined_doc)
+        (combined / "policy.md").write_bytes(policy)
         signature_oracle(valid, keys / "trusted.pub", True)
         signature_oracle(untrusted, keys / "other.pub", True)
         signature_oracle(untrusted, keys / "trusted.pub", False)

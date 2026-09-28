@@ -15,10 +15,16 @@ pub enum NativeFile {
 }
 impl NativeFile {
     pub fn name(self) -> &'static str {
-        match self { Self::Codex => "AGENTS.md", Self::Claude => "CLAUDE.md" }
+        match self {
+            Self::Codex => "AGENTS.md",
+            Self::Claude => "CLAUDE.md",
+        }
     }
     pub fn target(self) -> &'static str {
-        match self { Self::Codex => "codex@0.158.0", Self::Claude => "claude-code@2.1.283" }
+        match self {
+            Self::Codex => "codex@0.158.0",
+            Self::Claude => "claude-code@2.1.283",
+        }
     }
     pub fn for_target(target: &str) -> Result<Self, Error> {
         match target {
@@ -29,7 +35,10 @@ impl NativeFile {
     }
 }
 pub fn digest(bytes: &[u8]) -> String {
-    Sha256::digest(bytes).iter().map(|b| format!("{b:02x}")).collect()
+    Sha256::digest(bytes)
+        .iter()
+        .map(|b| format!("{b:02x}"))
+        .collect()
 }
 pub struct Rendered {
     pub file: NativeFile,
@@ -41,7 +50,11 @@ pub struct Rendered {
 pub fn render(root: &Path, bundle: &VerifiedBundle, target: &str) -> Result<Rendered, Error> {
     let file = NativeFile::for_target(target)?;
     let manifest = bundle.manifest();
-    let mut text = format!("# Forgeproof managed instructions\n\nRelease: {}\nManifest: {}\nTarget: {target}\n\n", manifest.release_id, bundle.manifest_sha256());
+    let mut text = format!(
+        "# Forgeproof managed instructions\n\nRelease: {}\nManifest: {}\nTarget: {target}\n\n",
+        manifest.release_id,
+        bundle.manifest_sha256()
+    );
     let mut entries: Vec<_> = manifest.files.iter().collect();
     entries.sort_by_key(|f| &f.path);
     for entry in entries {
@@ -56,11 +69,21 @@ pub fn render(root: &Path, bundle: &VerifiedBundle, target: &str) -> Result<Rend
             return Err(fail("source_changed"));
         }
         let content = std::str::from_utf8(&bytes).map_err(|_| fail("invalid_instruction_text"))?;
-        if content.contains('\0') { return Err(fail("invalid_instruction_text")); }
+        if content.contains('\0') {
+            return Err(fail("invalid_instruction_text"));
+        }
         text.push_str(&format!("## Source: {}\n\n", entry.path));
         text.push_str(content);
         text.push('\n');
-        if text.len() > OUTPUT_LIMIT { return Err(fail("instructions_too_large")); }
+        if text.len() > OUTPUT_LIMIT {
+            return Err(fail("instructions_too_large"));
+        }
     }
-    Ok(Rendered { file, text, release_id: manifest.release_id.clone(), manifest_sha256: bundle.manifest_sha256().into(), target: target.into() })
+    Ok(Rendered {
+        file,
+        text,
+        release_id: manifest.release_id.clone(),
+        manifest_sha256: bundle.manifest_sha256().into(),
+        target: target.into(),
+    })
 }

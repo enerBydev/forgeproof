@@ -103,7 +103,10 @@ fn main() -> ExitCode {
         .map(|s| s.into_string())
         .collect();
     if let Ok(values) = &args {
-        if values.first().is_some_and(|v| ["install", "installation-status", "recover"].contains(&v.as_str())) {
+        if values
+            .first()
+            .is_some_and(|v| ["install", "installation-status", "recover"].contains(&v.as_str()))
+        {
             return distribution_cli::run(values);
         }
     }

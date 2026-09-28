@@ -258,9 +258,17 @@ fn blocks_competing_operations_without_changing_outputs() {
     let p = Project::new();
     success(install(&p.0, "valid", "current.json", CODEX), "installed");
     let before = fs::read(p.0.join("AGENTS.md")).unwrap();
-    let lock = fs::OpenOptions::new().read(true).write(true).open(p.0.join(".forgeproof/install.lock")).unwrap();
+    let lock = fs::OpenOptions::new()
+        .read(true)
+        .write(true)
+        .open(p.0.join(".forgeproof/install.lock"))
+        .unwrap();
     lock.lock().unwrap();
-    for result in [install(&p.0, "updated", "current.json", CODEX), command(&["installation-status"], &p.0), command(&["recover"], &p.0)] {
+    for result in [
+        install(&p.0, "updated", "current.json", CODEX),
+        command(&["installation-status"], &p.0),
+        command(&["recover"], &p.0),
+    ] {
         error(result, "installation_busy");
     }
     assert_eq!(fs::read(p.0.join("AGENTS.md")).unwrap(), before);
@@ -273,14 +281,26 @@ fn rejects_corrupt_state_and_pending_journals() {
     let state = p.0.join(".forgeproof/state.json");
     let original = fs::read(&state).unwrap();
     fs::write(&state, b"{}").unwrap();
-    error(command(&["installation-status"], &p.0), "invalid_installation_state");
-    error(install(&p.0, "updated", "current.json", CODEX), "invalid_installation_state");
+    error(
+        command(&["installation-status"], &p.0),
+        "invalid_installation_state",
+    );
+    error(
+        install(&p.0, "updated", "current.json", CODEX),
+        "invalid_installation_state",
+    );
     fs::write(&state, &original).unwrap();
     let journal = p.0.join(".forgeproof/pending.json");
     for content in [b"{".to_vec(), b"{}".to_vec(), vec![b' '; 524289]] {
         fs::write(&journal, &content).unwrap();
-        error(command(&["installation-status"], &p.0), "installation_incomplete");
-        error(install(&p.0, "updated", "current.json", CODEX), "installation_incomplete");
+        error(
+            command(&["installation-status"], &p.0),
+            "installation_incomplete",
+        );
+        error(
+            install(&p.0, "updated", "current.json", CODEX),
+            "installation_incomplete",
+        );
         error(command(&["recover"], &p.0), "invalid_installation_journal");
         assert_eq!(fs::read(p.0.join("AGENTS.md")).unwrap(), before);
         assert_eq!(fs::read(&state).unwrap(), original);
@@ -301,7 +321,9 @@ fn rejects_links_in_control_surfaces_and_unrecognized_control_files() {
         let protected = other.0.join("precious");
         fs::write(&protected, "preserved").unwrap();
         let control = p.0.join(".forgeproof").join(name);
-        if control.exists() { fs::remove_file(&control).unwrap(); }
+        if control.exists() {
+            fs::remove_file(&control).unwrap();
+        }
         symlink(&protected, &control).unwrap();
         error(command(&["recover"], &p.0), "unsafe_install_path");
         assert_eq!(fs::read_to_string(&protected).unwrap(), "preserved");
@@ -309,9 +331,30 @@ fn rejects_links_in_control_surfaces_and_unrecognized_control_files() {
     let p = Project::new();
     success(install(&p.0, "valid", "current.json", CODEX), "installed");
     fs::hard_link(p.0.join("AGENTS.md"), p.0.join("copy")).unwrap();
-    error(install(&p.0, "updated", "current.json", CODEX), "unsafe_install_path");
+    error(
+        install(&p.0, "updated", "current.json", CODEX),
+        "unsafe_install_path",
+    );
     fs::remove_file(p.0.join("copy")).unwrap();
     fs::write(p.0.join(".forgeproof/unknown"), "owned by user").unwrap();
-    error(install(&p.0, "updated", "current.json", CODEX), "invalid_installation_state");
-    assert_eq!(fs::read_to_string(p.0.join(".forgeproof/unknown")).unwrap(), "owned by user");
+    error(
+        install(&p.0, "updated", "current.json", CODEX),
+        "invalid_installation_state",
+    );
+    assert_eq!(
+        fs::read_to_string(p.0.join(".forgeproof/unknown")).unwrap(),
+        "owned by user"
+    );
+}
+
+#[test]
+fn renders_instruction_and_policy_files_in_path_order() {
+    let first = Project::new();
+    let second = Project::new();
+    success(install(&first.0, "combined", "current.json", CODEX), "installed");
+    success(install(&second.0, "combined", "current.json", CODEX), "installed");
+    let text = fs::read_to_string(first.0.join("AGENTS.md")).unwrap();
+    assert_eq!(text, fs::read_to_string(second.0.join("AGENTS.md")).unwrap());
+    assert!(text.find("## Source: instructions/rust.md").unwrap() < text.find("## Source: policy.md").unwrap());
+    assert!(text.contains("# Test policy\nReview changes before publishing.\n"));
 }
