@@ -1,7 +1,7 @@
 name: Verify
 on:
   push:
-    branches: [main, feat/verifier-foundation]
+    branches: [main]
   pull_request:
   workflow_dispatch:
 permissions:
@@ -21,11 +21,14 @@ jobs:
           sudo apt-get update -qq
           sudo apt-get install -y minisign
           python3 scripts/generate-fixtures.py
-      - name: Check formatting
-        run: cargo fmt --all -- --check
       - name: Test Rust workspace
         shell: bash
         run: cargo test --workspace --locked 2>&1 | tee rust-tests.log
+      - name: Check formatting
+        if: always()
+        run: |
+          cargo fmt --all
+          git diff --exit-code -- '*.rs'
       - name: Lint Rust
         run: cargo clippy --workspace --all-targets --locked -- -D warnings
       - name: Prove verifier regression sensitivity

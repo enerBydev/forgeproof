@@ -44,11 +44,11 @@ def generate(output):
         (output / "trusted.pub").write_text(pub)
         (output / "trust.json").write_text(json.dumps({"schema_version": 1, "keys": [{"id": "test-publisher", "public_key": pub.splitlines()[1]}]}))
         content = b"# Test instructions\nRespect the project lockfiles.\n"
-        manifest = {"schema_version": 1, "release_id": "rust-nix@0.1.0", "supported_targets": ["codex", "claude-code"], "files": [{"path": "instructions/rust.md", "sha256": hashlib.sha256(content).hexdigest(), "size_bytes": len(content), "role": "instructions"}]}
-        def bundle(name, signer="trusted", document=None):
+        manifest = {"schema_version": 1, "release_id": "rust-nix@0.1.0", "supported_targets": ["codex", "claude-code", "codex@0.158.0", "claude-code@2.1.283"], "files": [{"path": "instructions/rust.md", "sha256": hashlib.sha256(content).hexdigest(), "size_bytes": len(content), "role": "instructions"}]}
+        def bundle(name, signer="trusted", document=None, payload=content):
             root = output / name
             (root / "instructions").mkdir(parents=True)
-            (root / "instructions/rust.md").write_bytes(content)
+            (root / "instructions/rust.md").write_bytes(payload)
             (root / "manifest.json").write_text(json.dumps(document or manifest, sort_keys=True, separators=(",", ":")))
             run("minisign", "-S", "-s", str(keys / f"{signer}.sec"), "-m", str(root / "manifest.json"), "-t", "forgeproof-test-fixture")
             return root
@@ -68,6 +68,20 @@ def generate(output):
         changed_manifest = bundle("changed-manifest")
         with (changed_manifest / "manifest.json").open("a") as f: f.write("\n")
         unexpected_dir = bundle("extra-directory"); (unexpected_dir / "hidden").mkdir()
+        def native_variant(name, payload, role="instructions", release="rust-nix@0.1.0"):
+            document = json.loads(json.dumps(manifest))
+            document["release_id"] = release
+            document["files"][0].update(sha256=hashlib.sha256(payload).hexdigest(), size_bytes=len(payload), role=role)
+            return bundle(name, document=document, payload=payload)
+        native_variant("updated", b"# Updated instructions\nRun the pinned tests.\n", release="rust-nix@0.2.0")
+        native_variant("unsupported-role", content, role="skill")
+        native_variant("non-utf8", b"\xff\xfe")
+        native_variant("nul-text", b"Do not load\x00hidden text")
+        # Hand-specified output envelope: manifest digest always occupies 64 bytes.
+        envelope = "# Forgeproof managed instructions\n\nRelease: rust-nix@0.1.0\nManifest: " + "0" * 64 + "\nTarget: codex@0.158.0\n\n## Source: instructions/rust.md\n\n"
+        limit_payload = b"A" * (32768 - len(envelope.encode()) - 1)
+        native_variant("at-output-limit", limit_payload)
+        native_variant("over-output-limit", limit_payload + b"A")
         signature_oracle(valid, keys / "trusted.pub", True)
         signature_oracle(untrusted, keys / "other.pub", True)
         signature_oracle(untrusted, keys / "trusted.pub", False)

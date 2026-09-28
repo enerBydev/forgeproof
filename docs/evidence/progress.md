@@ -64,3 +64,12 @@ Local host: Ubuntu; Git, Node.js and Python available. Rust, Cargo, Nix and Mini
 - https://jedisct1.github.io/minisign/
 
 Sources inform specific APIs; this is not a claim to have read all ecosystem documentation.
+
+## Local distribution execution — 2026-09-28 UTC
+
+- Gap closure final CI 36412648667 passed at `1a7e03e428cfafad5a64ec3bb07ff7250aeedf7d`. Fresh independent review through local `5e78cd0` found no actionable findings. Review does not substitute for runtime CI; snapshots cover names/types/bytes/link targets, not transient writes or all filesystem metadata.
+- PR #2 integrated as `95666577b3e22c89d715819e392e61379ac4ea43`. Both `feat/verifier-foundation` and `fix/verifier-evidence` were deleted remotely and locally after content checks. Local main uses the exact remote commit and tree.
+- Ruling: refine and execute delivery 2 inline under the user's explicit continuation/integration authorization; no additional approval gate is needed for routine implementation decisions.
+- Ruling: start with exact native instruction profiles, explicitly rejecting unsupported roles instead of silently dropping content. Cost: executable skills and other role adapters remain unavailable until implemented and tested.
+- Ruling: recovery rolls back rather than auto-promoting an interrupted candidate. Cost: retry installation after recovery; benefit: recovery does not authorize stale candidate instructions.
+- Pre-flight: verifier output feeds render only after current authorization; rendered outputs feed fixed-path journal; state hashes feed readiness. No shared-interface conflicts. The original plan does not define a job runner in this delivery: readiness is a prerequisite API, not a claim that external clients can be forcibly blocked.
