@@ -10,7 +10,7 @@
 
 **Spec:** La especificación está incluida en este mismo documento, desde «Especificación y decisiones» hasta «Plan de entregas». El plan ejecutable del primer hito figura al final. Las rutas de código de ese plan son archivos futuros, no archivos ya creados.
 
-**Estado:** Propuesta técnica de 26 de septiembre de 2026. Se contrastaron las capacidades documentadas que sustentan las decisiones. No se ha implementado, instalado ni certificado la plataforma. Las cifras de aceptación son objetivos propuestos, no resultados medidos.
+**Estado:** Diseño original de 26 de septiembre de 2026; seguimiento actualizado el 28 de septiembre. El primer hito del verificador local está implementado y verificado. El resto de entregas conserva su condición de plan, sin certificación de clientes. Véase [trazabilidad y evidencia](../evidence/traceability.md) para resultados, adaptaciones y pendientes.
 
 ## Global Constraints
 
@@ -218,7 +218,7 @@ Se comienza con un especialista Rust/Nix que ayude a construir la plataforma, ot
 
 ### Contrato del hito
 
-La CLI propuesta se llama `engctl`; todavía no existe. El comando previsto es `engctl verify --bundle <dir> --trust <file> --revocations <file> --target <id> --json`.
+La CLI implementada se llama `engctl`. Su comando es `engctl verify --bundle <dir> --trust <file> --revocations <file> --target <id> --json`.
 
 El paquete contiene `manifest.json`, `manifest.json.minisig` y los archivos enumerados por el manifiesto. La firma cubre los bytes originales del manifiesto. El ID de contenido es el SHA-256 de esos mismos bytes. No se incluye el hash del manifiesto dentro de sí mismo.
 
@@ -238,12 +238,12 @@ El formato JSON de resultado incluye `schema_version`, `release_id`, `manifest_s
 
 **Interfaces:** producir `Manifest`, `FileEntry`, `FileRole`, `ValidationError`; `parse_manifest(bytes: &[u8]) -> Result<Manifest, ValidationError>`. Los campos corresponden exactamente al contrato del hito.
 
-- [ ] Resolver y documentar una combinación de toolchain y bibliotecas soportada; fijar revisiones y archivos de bloqueo. El entorno incluye el verificador Minisign para las tareas siguientes.
-- [ ] Escribir tests `accepts_valid_manifest`, `rejects_duplicate_paths`, `rejects_escape_paths`, `rejects_unknown_schema` y `enforces_size_limits`. Comprobar aceptación de los límites y rechazo al excederlos en una unidad; `files.len() == 1024` es válido si respeta los demás límites.
-- [ ] Ejecutar `cargo test -p eng-contracts --locked` y comprobar que los tests de comportamiento fallan antes de implementar sus validaciones.
-- [ ] Implementar el parser y las invariantes en `manifest.rs`; usar errores tipados y rechazar campos desconocidos para la versión 1.
-- [ ] Repetir el comando hasta PASS; ejecutar formato y compilar en el entorno Nix fijado.
-- [ ] Revisar la evidencia de versiones y registrar el cambio en Git junto con los bloqueos.
+- [x] Resolver y documentar una combinación de toolchain y bibliotecas soportada; fijar revisiones y archivos de bloqueo. El entorno incluye el verificador Minisign para las tareas siguientes.
+- [x] Escribir tests `accepts_valid_manifest`, `rejects_duplicate_paths`, `rejects_escape_paths`, `rejects_unknown_schema` y `enforces_size_limits`. Comprobar aceptación de los límites y rechazo al excederlos en una unidad; `files.len() == 1024` es válido si respeta los demás límites.
+- [x] Ejecutar `cargo test -p eng-contracts --locked` y comprobar que los tests de comportamiento fallan antes de implementar sus validaciones.
+- [x] Implementar el parser y las invariantes en `manifest.rs`; usar errores tipados y rechazar campos desconocidos para la versión 1.
+- [x] Repetir el comando hasta PASS; ejecutar formato y compilar en el entorno Nix fijado.
+- [x] Revisar la evidencia de versiones y registrar el cambio en Git junto con los bloqueos.
 
 ### Task 2: integridad y autenticidad reales
 
@@ -251,12 +251,12 @@ El formato JSON de resultado incluye `schema_version`, `release_id`, `manifest_s
 
 **Interfaces:** consumir `Manifest`; producir `TrustStore`, `VerifiedBundle` y `VerificationError`; `verify_integrity(root: &std::path::Path, trust: &TrustStore) -> Result<VerifiedBundle, VerificationError>`. `VerifiedBundle` contiene manifiesto, hash y firmante comprobados. El catálogo invoca la implementación de Minisign fijada; no implementa criptografía propia.
 
-- [ ] Crear fixtures reproducibles con claves exclusivas de tests: válida autorizada, válida no autorizada, firma corrupta y archivo alterado. Calcular hashes esperados con una herramienta independiente del código que se probará.
-- [ ] Escribir `accepts_trusted_signature`, `rejects_valid_untrusted_signer`, `rejects_tampered_file`, `rejects_extra_file`, `rejects_symlink_component` y `rejects_size_mismatch`; cada rechazo comprueba su código de error específico.
-- [ ] Ejecutar `cargo test -p eng-catalog --locked` y observar los fallos pertinentes.
-- [ ] Implementar verificación de firma sobre bytes originales, enumeración exacta y hashes de archivos. Limitar recursos antes de cargar contenido y no ejecutar payloads.
-- [ ] Repetir hasta PASS; comprobar que la firma de los fixtures también se valida o rechaza con el binario Minisign fuera de la biblioteca.
-- [ ] Registrar en Git la implementación y fixtures; las claves de producción nunca participan en tests.
+- [x] Crear fixtures reproducibles con claves exclusivas de tests: válida autorizada, válida no autorizada, firma corrupta y archivo alterado. Calcular hashes esperados con una herramienta independiente del código que se probará.
+- [x] Escribir `accepts_trusted_signature`, `rejects_valid_untrusted_signer`, `rejects_tampered_file`, `rejects_extra_file`, `rejects_symlink_component` y `rejects_size_mismatch`; cada rechazo comprueba su código de error específico.
+- [x] Ejecutar `cargo test -p eng-catalog --locked` y observar los fallos pertinentes.
+- [x] Implementar verificación de firma sobre bytes originales, enumeración exacta y hashes de archivos. Limitar recursos antes de cargar contenido y no ejecutar payloads.
+- [x] Repetir hasta PASS; comprobar que la firma de los fixtures también se valida o rechaza con el binario Minisign fuera de la biblioteca.
+- [x] Registrar en Git la implementación y el generador de fixtures temporales; adaptación de rutas documentada en la trazabilidad. Las claves de producción nunca participan en tests.
 
 ### Task 3: autorización, compatibilidad y recibo
 
@@ -264,11 +264,11 @@ El formato JSON de resultado incluye `schema_version`, `release_id`, `manifest_s
 
 **Interfaces:** producir `RevocationSnapshot`, `VerificationReceipt`, `AuthorizationStatus::{Approved, Denied, Revoked, Unknown}` y `IntegrityStatus::{Verified, Failed}`. `authorize(bundle: &VerifiedBundle, target: &str, revocations: Option<&RevocationSnapshot>, now: std::time::SystemTime) -> VerificationReceipt`. La hora es un argumento para probar vencimientos sin esperas.
 
-- [ ] Escribir `rejects_revoked_release`, `marks_expired_revocations_unknown`, `rejects_unsupported_target` y `detects_changed_content_on_reverification`. El último altera un byte tras una verificación correcta y exige error de hash en la siguiente.
-- [ ] Ejecutar los tests de `eng-catalog` y comprobar sus fallos iniciales.
-- [ ] Implementar autorización separada de integridad. Un target no listado genera `unsupported_target` y `AuthorizationStatus::Denied`; se devuelve un recibo no utilizable, sin degradación silenciosa.
-- [ ] Ejecutar hasta PASS, incluyendo el instante exacto de expiración y entradas de revocación duplicadas rechazadas durante su lectura.
-- [ ] Registrar el cambio en Git después de revisar que la firma válida por sí sola no produce autorización.
+- [x] Escribir `rejects_revoked_release`, `marks_expired_revocations_unknown`, `rejects_unsupported_target` y `detects_changed_content_on_reverification`. El último altera un byte tras una verificación correcta y exige error de hash en la siguiente.
+- [x] Ejecutar los tests de `eng-catalog` y comprobar sus fallos iniciales.
+- [x] Implementar autorización separada de integridad. Un target no listado genera `unsupported_target` y `AuthorizationStatus::Denied`; se devuelve un recibo no utilizable, sin degradación silenciosa.
+- [x] Ejecutar hasta PASS, incluyendo el instante exacto de expiración y entradas de revocación duplicadas rechazadas durante su lectura.
+- [x] Registrar el cambio en Git después de revisar que la firma válida por sí sola no produce autorización.
 
 ### Task 4: CLI y ensayo de aceptación NixOS
 
@@ -276,13 +276,13 @@ El formato JSON de resultado incluye `schema_version`, `release_id`, `manifest_s
 
 **Interfaces:** consumir parser, `verify_integrity` y `authorize`; producir la CLI, su JSON versionado y códigos de salida 0, 1 y 2 definidos en el contrato. Para errores anteriores a leer un release válido, `release_id`, hash y firmante pueden ser `null`.
 
-- [ ] Escribir aceptación del comando con paquete aprobado, alterado, revocado, firmante no confiable, target incompatible y registro de revocación vencido. Comprobar JSON, código de salida y ausencia de cambios en los archivos de entrada.
-- [ ] Ejecutar `cargo test -p engctl --locked` y registrar los casos que fallan antes de conectar los componentes.
-- [ ] Implementar CLI y serialización; stdout contiene únicamente JSON cuando se usa `--json`, mientras los diagnósticos auxiliares van a stderr.
-- [ ] Ejecutar `cargo test --workspace --locked`, `cargo fmt --all -- --check` y los lints seleccionados para el workspace.
-- [ ] Añadir un test NixOS con el paquete y sus dependencias declaradas que ejecute la misma aceptación desde una VM limpia. Exponerlo como `checks.x86_64-linux.verifier`.
-- [ ] Ejecutar `nix flake check` en un runner con virtualización disponible. Conservar configuración, revisión, logs y resultados; si esa capacidad no existe, el hito queda pendiente de esa comprobación.
-- [ ] Revisar el diff y la matriz de aceptación; registrar el cambio en Git y producir el informe del hito. No etiquetar el resto de la plataforma como implementado por haber completado este verificador.
+- [x] Escribir aceptación del comando con paquete aprobado, alterado, revocado, firmante no confiable, target incompatible y registro de revocación vencido. Comprobar JSON, código de salida y ausencia de cambios en los archivos de entrada.
+- [x] Ejecutar `cargo test -p engctl --locked` y registrar los casos que fallan antes de conectar los componentes.
+- [x] Implementar CLI y serialización; stdout contiene únicamente JSON cuando se usa `--json`, mientras los diagnósticos auxiliares van a stderr.
+- [x] Ejecutar `cargo test --workspace --locked`, `cargo fmt --all -- --check` y los lints seleccionados para el workspace.
+- [x] Añadir un test NixOS con el paquete y sus dependencias declaradas que ejecute la misma aceptación desde una VM limpia. Exponerlo como `checks.x86_64-linux.verifier`.
+- [x] Ejecutar `nix flake check` en un runner con virtualización disponible. Conservar configuración, revisión, logs y resultados; si esa capacidad no existe, el hito queda pendiente de esa comprobación.
+- [x] Revisar el diff y la matriz de aceptación; registrar el cambio en Git y producir el informe del hito. No etiquetar el resto de la plataforma como implementado por haber completado este verificador.
 
 El segundo hito se planifica después de revisar esta evidencia: renderizado por cliente, instalación, detección de modificaciones y recuperación. La actualización de varios archivos no se considera atómica por usar escrituras atómicas individuales; se define y prueba un journal de recuperación y se bloquean nuevos trabajos administrados mientras la instalación esté incompleta.
 
@@ -314,4 +314,4 @@ Estas fuentes sustentan capacidades documentadas. La arquitectura, prioridades, 
 
 ## Revisión del documento
 
-Se comprobaron las correspondencias entre objetivos y entregas, la separación entre integridad y autorización, el uso de nombres de interfaces en el primer hito, las fuentes de las capacidades afirmadas y la distinción entre metas y resultados. La revisión es documental: las pruebas descritas todavía deben implementarse y ejecutarse.
+Se comprobaron las correspondencias entre objetivos y entregas, la separación entre integridad y autorización, el uso de nombres de interfaces en el primer hito, las fuentes de las capacidades afirmadas y la distinción entre metas y resultados. Esta sección describe la revisión original del diseño. El estado posterior del primer hito y sus comprobaciones está registrado en la trazabilidad; no se atribuyen esos resultados al resto de la plataforma.

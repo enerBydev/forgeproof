@@ -18,6 +18,17 @@ def run(*args):
     subprocess.run(args, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
 
 
+def signature_oracle(root, public_key, expected):
+    result = subprocess.run(
+        ["minisign", "-V", "-p", str(public_key), "-m", str(root / "manifest.json")],
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+    )
+    accepted = result.returncode == 0
+    if accepted != expected:
+        raise AssertionError(f"Minisign oracle disagrees for {root.name}: expected {expected}, exit {result.returncode}")
+    print(f"Independent Minisign: {root.name} / {public_key.name}: {'accept' if accepted else 'reject'}")
+
+
 def generate(output):
     output.mkdir(parents=True, exist_ok=False)
     now = int(time.time())
@@ -42,8 +53,7 @@ def generate(output):
             run("minisign", "-S", "-s", str(keys / f"{signer}.sec"), "-m", str(root / "manifest.json"), "-t", "forgeproof-test-fixture")
             return root
         valid = bundle("valid")
-        run("minisign", "-V", "-p", str(keys / "trusted.pub"), "-m", str(valid / "manifest.json"))
-        bundle("untrusted", "other")
+        untrusted = bundle("untrusted", "other")
         tampered = bundle("tampered")
         (tampered / "instructions/rust.md").write_bytes(b"!" + content[1:])
         extra = bundle("extra"); (extra / "extra.txt").write_text("unexpected")
@@ -58,6 +68,13 @@ def generate(output):
         changed_manifest = bundle("changed-manifest")
         with (changed_manifest / "manifest.json").open("a") as f: f.write("\n")
         unexpected_dir = bundle("extra-directory"); (unexpected_dir / "hidden").mkdir()
+        signature_oracle(valid, keys / "trusted.pub", True)
+        signature_oracle(untrusted, keys / "other.pub", True)
+        signature_oracle(untrusted, keys / "trusted.pub", False)
+        signature_oracle(bad_signature, keys / "trusted.pub", False)
+        signature_oracle(changed_manifest, keys / "trusted.pub", False)
+        # Minisign authenticates the manifest; payload hashes are a separate check.
+        signature_oracle(tampered, keys / "trusted.pub", True)
     print(f"Test fixtures generated in {output}; independent Minisign verification passed.")
 
 

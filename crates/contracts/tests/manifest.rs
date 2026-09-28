@@ -99,6 +99,13 @@ fn enforces_size_limits() {
 }
 
 #[test]
+fn accepts_manifest_at_exact_byte_limit() {
+    let mut bytes = serde_json::to_vec(&valid()).unwrap();
+    bytes.resize(1024 * 1024, b' ');
+    assert!(parse_manifest(&bytes).is_ok());
+}
+
+#[test]
 fn rejects_ambiguous_metadata() {
     let mut v = valid();
     v["files"][0]["sha256"] = json!("bad");

@@ -4,14 +4,15 @@ Alcance: contratos v1, autenticidad e integridad de paquetes, autorización loca
 
 | Condición | Evidencia implementada |
 | --- | --- |
-| Límites y estructura del manifiesto | 7 tests de contratos, incluidos límites exactos de cantidad y tamaño |
+| Límites y estructura del manifiesto | 8 tests de contratos, incluida aceptación de exactamente 1 MiB y rechazo de un byte adicional |
 | Firma válida de una clave no confiable | Rechazo `untrusted_signer`, fixture firmado por otra clave real |
 | Manipulación de manifiesto o contenido | Rechazo de firma o SHA-256, incluso después de una verificación anterior |
 | Rutas de escape, enlaces y contenido adicional | Validación de rutas y tests de symlink, archivos, directorios y ausencia de archivos |
 | Revocación por publicación, hash o firmante | Test parametrizado; salida 1 |
 | Registro ausente, futuro o vencido | Vigencia desconocida; salida 2, incluido el instante exacto de vencimiento |
 | Cliente no declarado | Denegación `unsupported_target` |
-| Interfaz de comando | 6 tests con procesos reales, JSON, códigos de salida y manifiesto sin cambios |
+| Interfaz de comando | 6 tests con procesos reales, JSON, códigos de salida y árbol completo de entradas sin cambios |
+| Sensibilidad de las pruebas | 6 mutaciones detectadas: límite de 1 MiB y escrituras sobre manifiesto, firma, contenido, confianza y revocaciones |
 | NixOS limpio | VM declarada en `nix/tests/verifier.nix`, 7 escenarios de CLI |
 | Recibo importado | 9 tests web; nunca se convierte en evidencia autenticada |
 | JSON con coerción de tipos | Regresión del hallazgo de revisión: arrays y objetos no pueden representar autorización |
