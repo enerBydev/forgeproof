@@ -34,6 +34,10 @@ jobs:
       - name: Prove verifier regression sensitivity
         shell: bash
         run: python3 scripts/check-verifier-mutations.py 2>&1 | tee mutation-tests.log
+      - name: Prove installer recovery
+        if: always()
+        shell: bash
+        run: python3 scripts/check-installer-recovery.py 2>&1 | tee installer-recovery.log
       - name: Test and build web interface
         shell: bash
         run: |
@@ -52,6 +56,7 @@ jobs:
             rust-tests.log
             web-tests.log
             mutation-tests.log
+            installer-recovery.log
             dist/status.json
           if-no-files-found: warn
   nix:
