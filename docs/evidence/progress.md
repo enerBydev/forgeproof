@@ -45,7 +45,16 @@ Local host: Ubuntu; Git, Node.js and Python available. Rust, Cargo, Nix and Mini
 - Public source review found no production credentials or signing keys. Vercel required no secret environment variables for this static interface.
 - First milestone delivered: verifier, contracts, CLI, frozen environment/CI, NixOS acceptance and receipt inspector. Native client installation, MCP serving and documentation-update automation remain future milestones; no compatibility certification is claimed.
 
-## Official sources consulted
+## Verifier evidence closure — 2026-09-28 UTC
+
+- User authorized closing the audit gaps, updating plan traceability, deleting the integrated branch and synchronizing main before continuing the next milestone.
+- CI 36374905582 at `2bbf8d077a6db5e1209b4f23671c947879702353`: Rust suite 32/32, web 9/9, Clippy and formatting pass. Six injected faults were detected in disposable repository copies; restored checks pass. No production verifier behavior changed. NixOS VM acceptance passed.
+- External Minisign oracle confirms valid/trusted and other/own-key acceptance, other/trusted-key rejection, corrupt-signature rejection and changed-manifest rejection. Tampered payload still has a valid manifest signature and is rejected by the independent content-hash layer.
+- Ruling: retain the approved fixture generator and consolidated integrity suite, documenting their mapping to proposed paths in `traceability.md`; this changes test organization, not the acceptance requirements.
+- Ruling: use the existing dedicated checkout on a correction branch. No unrelated user changes were present; native Rust/Nix checks remain on CI because those tools are unavailable locally.
+- The original source plan remains historical outside the repository; the maintained repository copy links the current traceability and explicitly records subsequent milestone state.
+
+## Official sources consulted (initial milestone)
 
 - https://blog.rust-lang.org/2026/08/20/Rust-1.98.0/
 - https://docs.rs/serde/1.0.229/serde/
