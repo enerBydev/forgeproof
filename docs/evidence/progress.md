@@ -32,6 +32,18 @@ Local host: Ubuntu; Git, Node.js and Python available. Rust, Cargo, Nix and Mini
 - Independent read-only review found a web coercion bug: an array authorization value bypassed strict state comparisons, and a specially shaped object could throw. Observed regression RED (8 passed, 1 failed), then GREEN (9 passed). Require string before the property lookup; include both array and object regressions. Reviewer found no other blocking Rust issues under the documented threat model and deferred runtime verification to CI.
 - [CI run 36339981281](https://github.com/enerBydev/forgeproof/actions/runs/36339981281), revision `3068acbd5755e12c0d6a292e39207623f3fc005d`: 31 Rust tests, 9 web tests, Clippy, formatting and web build GREEN using committed dependency locks. `nix flake check --no-update-lock-file` built the package, ran its tests, booted the NixOS VM and completed all 7 CLI acceptance scenarios (VM script 22.73 seconds). This is the first complete system acceptance evidence.
 - Replace bootstrap dependency resolution with normal CI for pushes and pull requests: frozen locks, exact action commits, Rust workspace tests and NixOS VM. No ordinary workflow regenerates dependency locks.
+- [Final branch CI 36340263488](https://github.com/enerBydev/forgeproof/actions/runs/36340263488), revision `22f3232f13474f33a266e6ecdc28d5ed688526f0`: Rust/web and NixOS VM jobs GREEN with unchanged dependency locks. Independent recheck confirmed the web finding closed.
+- PR #1 merged to `main` as `54c941925abc908d10f37081ccae6ccb00c832f4`. [Main CI 36340377977](https://github.com/enerBydev/forgeproof/actions/runs/36340377977) also GREEN.
+
+## First deployment acceptance — 2026-09-28 UTC
+
+- Public application: https://forgeproof-two.vercel.app/ (project `forgeproof` in the authorized Vercel team). Production deployment `dpl_DHiZDKEWW21LJ999VS8PCjywZUbm` reached `READY`, source revision `54c941925abc908d10f37081ccae6ccb00c832f4`.
+- `/status.json` returned HTTP 200 and the exact source revision, with `capability = receipt-inspection` and `authenticated_verification = false`.
+- Browser acceptance: the supplied example renders unknown validity; malformed JSON hides the previous result; a local JSON file renders its declared approval with the unauthenticated-receipt warning; an array authorization value is rejected. The tests used explicitly synthetic demo data, not real authorization evidence.
+- No console error from the application origin was observed during these interactions. The browser extension emitted unrelated metadata errors; they are not attributed to the application.
+- Deployed headers confirmed CSP with `connect-src 'none'`, `frame-ancestors 'none'`, `object-src 'none'` and `form-action 'none'`, plus nosniff, no-referrer and disabled camera/microphone/geolocation permissions.
+- Public source review found no production credentials or signing keys. Vercel required no secret environment variables for this static interface.
+- First milestone delivered: verifier, contracts, CLI, frozen environment/CI, NixOS acceptance and receipt inspector. Native client installation, MCP serving and documentation-update automation remain future milestones; no compatibility certification is claimed.
 
 ## Official sources consulted
 

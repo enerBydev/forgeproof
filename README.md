@@ -2,6 +2,8 @@
 
 Especialistas de ingeniería versionados, paquetes firmados y evidencia comprobable para asistentes de programación.
 
+[Abrir el inspector en Vercel](https://forgeproof-two.vercel.app/) · [Evidencia de CI](https://github.com/enerBydev/forgeproof/actions)
+
 La primera entrega implementa **`engctl verify`**, un verificador local en Rust, y un **inspector de recibos para Vercel**. Comprueba firma Minisign, contenido exacto, cliente declarado y vigencia de revocaciones. La incertidumbre no permite aprobar un paquete.
 
 Esta entrega todavía no instala agentes ni ofrece un servidor MCP. La compatibilidad con Codex, Claude Code, ChatGPT y Claude requiere adaptadores y pruebas reales en entregas posteriores; un nombre de cliente en el manifiesto no la certifica.
